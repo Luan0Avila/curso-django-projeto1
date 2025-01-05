@@ -4,7 +4,7 @@ from django.shortcuts import render
 #HTTP request
 def home(request):
     #return HTTP response
-    return render(request, 'global/home.html')
+    return render(request, 'recipes/home.html',)
 
 def sobre(request):
     #return HTTP response
@@ -13,4 +13,4 @@ def sobre(request):
 
 def contato(request):
     #return HTTP response
-    return HttpResponse('Contato')
+    return render(request, 'recipes/contatos.html')
