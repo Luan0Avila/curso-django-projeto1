@@ -1,10 +1,10 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-# Create your views here.
+from django.shortcuts import render
+
 #HTTP request
 def home(request):
     #return HTTP response
-    return HttpResponse('Home')
+    return render(request, 'global/home.html')
 
 def sobre(request):
     #return HTTP response
