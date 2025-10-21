@@ -10,3 +10,4 @@ from .i18n import *
 from .security import *
 from .messages import *
 from .debug_toolbar import * #isort:skip
+from .rest_framework import *
