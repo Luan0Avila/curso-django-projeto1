@@ -1,10 +1,8 @@
-from collections import defaultdict
-
-from attr import attr
+from authors.validators import AuthorRecipeValidator
 from rest_framework import serializers
 from tag.models import Tag
+
 from .models import Recipe
-from authors.validators import AuthorRecipeValidator
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -19,8 +17,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'author',
             'category', 'tags', 'public', 'preparation',
-            'tag_objects', 'tag_links', 'preparation_time', 
-            'preparation_time_unit', 'servings', 'servings_unit',
+            'tag_objects', 'tag_links',
+            'preparation_time', 'preparation_time_unit', 'servings',
+            'servings_unit',
             'preparation_steps', 'cover'
         ]
 
@@ -57,15 +56,17 @@ class RecipeSerializer(serializers.ModelSerializer):
             attrs['preparation_time'] = self.instance.preparation_time
 
         super_validate = super().validate(attrs)
-        AuthorRecipeValidator(data=attrs, ErrorClass=serializers.ValidationError)
-
+        AuthorRecipeValidator(
+            data=attrs,
+            ErrorClass=serializers.ValidationError,
+        )
         return super_validate
 
     def save(self, **kwargs):
         return super().save(**kwargs)
-    
+
     def create(self, validated_data):
         return super().create(validated_data)
-    
+
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)

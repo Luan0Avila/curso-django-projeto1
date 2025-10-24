@@ -1,15 +1,14 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from tag.models import Tag
-from ..permissions import IsOwner
-
-
 
 from ..models import Recipe
+from ..permissions import IsOwner
 from ..serializers import RecipeSerializer, TagSerializer
 
 
@@ -48,21 +47,36 @@ class RecipeAPIv2ViewSet(ModelViewSet):
         pk = self.kwargs.get('pk', '')
 
         obj = get_object_or_404(
-            self.get_queryset(), pk=pk
+            self.get_queryset(),
+            pk=pk,
         )
+
         self.check_object_permissions(self.request, obj)
 
         return obj
 
     def get_permissions(self):
-        if self.request.method not in ['PATCH', 'DELETE']:
-            return[IsOwner(), ]
-        
+        if self.request.method in ['PATCH', 'DELETE']:
+            return [IsOwner(), ]
         return super().get_permissions()
 
-    def partial_update(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
+    def list(self, request, *args, **kwargs):
+        print('REQUEST', request.user)
+        print(request.user.is_authenticated)
+        return super().list(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
+
+    def partial_update(self, request, *args, **kwargs):
         recipe = self.get_object()
         serializer = RecipeSerializer(
             instance=recipe,
