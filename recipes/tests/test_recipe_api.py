@@ -7,8 +7,8 @@ from rest_framework import test
 
 class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
 
-    def get_recipe_api_list(self):
-        api_url = reverse('recipes:recipes-api-list')
+    def get_recipe_api_list(self, reverse_result=None):
+        api_url = reverse_result or reverse('recipes:recipes-api-list')
         response = self.client.get(api_url)
         return response
 
@@ -47,4 +47,24 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
             len(response.data.get('results')),
             1
         )
+    @patch('recipes.views.api.RecipeAPIv2Pagination.page_size', new=10)
+    def test_recipe_api_list_can_load_recipes_by_category_id(self):
+        wanted_category = self.make_category(name='wanted_category')
+        not_wanted_category = self.make_category(name='not wanted_category')
+        recipes = self.make_recipe_in_batch(qtd=10)
+
+        for recipe in recipes:
+            recipe.category = wanted_category
+            recipe.save()
+        recipes[0].category = not_wanted_category
+        recipes[0].save()
+
+        api_url = reverse('recipes:recipes-api-list') + '?category_id=1'
+        response = self.get_recipe_api_list(api_url)
+
+        self.assertEqual(
+            len(response.data.get('results')),
+            9
+        )
+
 
